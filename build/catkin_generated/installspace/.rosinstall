@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/turtlebot/gem-gazebo/install/setup.sh

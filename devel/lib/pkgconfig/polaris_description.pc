@@ -1,0 +1,8 @@
+prefix=/home/turtlebot/gem-gazebo/devel
+
+Name: polaris_description
+Description: Description of polaris_description
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/turtlebot/gem-gazebo/devel/lib 
+Requires: 

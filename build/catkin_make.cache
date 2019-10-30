@@ -1,0 +1,2 @@
+gazebo_ros_demos/gazebo_tutorials:gazebo_ros_demos/rrbot_control:gazebo_ros_demos/rrbot_description:gazebo_ros_demos/rrbot_gazebo:polaris_control:polaris_description:test_gazebo
+-DCATKIN_DEVEL_PREFIX=/home/turtlebot/gem-gazebo/devel -DCMAKE_INSTALL_PREFIX=/home/turtlebot/gem-gazebo/install -G Unix Makefiles
