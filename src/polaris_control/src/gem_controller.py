@@ -4,6 +4,8 @@ import time
 from std_msgs.msg import String, Bool, Float32, Float64, Char
 from sensor_msgs.msg import JointState
 from gazebo_msgs.msg import ModelStates
+from GetOffset import GetOffset
+from math import cos, atan, pi
 
 # Steering pubs
 left_steer_pub = rospy.Publisher('/polaris/front_left_steering_position_controller/command', Float64, queue_size=1)
@@ -54,19 +56,44 @@ class PID_controller:
         self.sp_prev_time = time.time()
         self.desired_speed = desired_speed
         self.max_accel = max_accel
-        
+
+        # car_states consists of x, y position and heading angle
+        self.car_states = [0.0] * 3
+        self.prev_states = [0.0] * 2
+        self.init_flag = 0.0
 
     
 
     def steer_control(self, data):
-        global wheel_to_steering_ratio 
+        global wheel_to_steering_ratio
 
-        data = data.pose[1].position.y      #Car's deviation from y axis
+        self.prev_states[0] = self.car_states[0]
+        self.prev_states[1] = self.car_states[1]
+        self.car_states[0] = data.pose[1].position.x  # vehicle x position
+        self.car_states[1] = data.pose[1].position.y  # vehicle y position
+
+        # calculate heading angle
+        dx = self.car_states[0] - self.prev_states[0]
+        dy = self.car_states[1] - self.prev_states[1]
+        if (dx >= 0 and dy >= 0) or (dx > 0 and dy < 0):
+            self.car_states[2] = atan(dy / dx)
+        elif dx < 0 and dx > 0:
+            self.car_states[2] = atan(dy / dx) + pi
+        else:
+            self.car_states[2] = atan(dy / dx) - pi
+
+        # get offset
+        if self.init_flag == 0:
+            offset = 0.0
+            self.init_flag = 1
+        else:
+            offset = GetOffset(self.car_states)
+        print("The offset is: %f" % offset)
         
         current_time =  time.time()
         delta_time = current_time-self.prev_time
 
-        current_error = 0 - data
+        current_error = offset
         delta_error = current_error-self.prev_error
         error_dot = delta_error/delta_time
 
@@ -141,8 +168,8 @@ class PID_controller:
             output = 0
 
         # Acceleration to torque
-	output = output / wheel_radius
-	output = output * wheel_inertia
+        output = output / wheel_radius
+        output = output * wheel_inertia
 
         # Declare message 
         throttle_command = Float64()
